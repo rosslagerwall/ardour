@@ -139,4 +139,21 @@ typedef struct _LV2_License_Interface {
    @}
 */
 
+/**
+   @defgroup plugin provided bypass
+
+	 TODO properly document  0: bypassed   1: active/processing
+   lv2:designation <http://ardour.org/lv2/processing#enable> ;
+
+   @{
+*/
+
+#define LV2_PROCESSING_URI "http://ardour.org/lv2/processing"
+#define LV2_PROCESSING_URI_PREFIX LV2_PROCESSING_URI "#"
+#define LV2_PROCESSING_URI__enable LV2_PROCESSING_URI_PREFIX "enable"
+
+/**
+   @}
+*/
+
 #endif

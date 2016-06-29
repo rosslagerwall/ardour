@@ -198,7 +198,7 @@ ProcessorEntry::ProcessorEntry (ProcessorBox* parent, boost::shared_ptr<Processo
 		_vbox.pack_end (output_routing_icon);
 		_vbox.pack_end (output_icon);
 
-		_button.set_active (_processor->active());
+		_button.set_active (_processor->enabled ());
 
 		input_icon.set_no_show_all(true);
 		routing_icon.set_no_show_all(true);
@@ -440,11 +440,11 @@ ProcessorEntry::led_clicked(GdkEventButton *ev)
 				_parent->all_visible_processors_active(false);
 
 				if (_position == Fader) {
-					_processor->deactivate ();
+					_processor->enable (false);
 				}
 			}
 			else {
-				_processor->deactivate ();
+				_processor->enable (false);
 			}
 
 		} else {
@@ -452,11 +452,11 @@ ProcessorEntry::led_clicked(GdkEventButton *ev)
 				_parent->all_visible_processors_active(true);
 
 				if (_position == Fader) {
-					_processor->activate ();
+					_processor->enable (true);
 				}
 			}
 			else {
-				_processor->activate ();
+				_processor->enable (true);
 			}
 		}
 	}
@@ -466,7 +466,7 @@ void
 ProcessorEntry::processor_active_changed ()
 {
 	if (_processor) {
-		_button.set_active (_processor->active());
+		_button.set_active (_processor->enabled ());
 	}
 }
 
@@ -2247,11 +2247,7 @@ ProcessorBox::processor_operation (ProcessorOperation op)
 
 	case ProcessorsToggleActive:
 		for (ProcSelection::iterator i = targets.begin(); i != targets.end(); ++i) {
-			if ((*i)->active()) {
-				(*i)->deactivate ();
-			} else {
-				(*i)->activate ();
-			}
+			(*i)->enable (!(*i)->enabled ());
 		}
 		break;
 
@@ -2343,12 +2339,7 @@ ProcessorBox::processor_button_release_event (GdkEventButton *ev, ProcessorEntry
 		) {
 
 		/* button2-click with no/appropriate modifiers */
-
-		if (processor->active()) {
-			processor->deactivate ();
-		} else {
-			processor->activate ();
-		}
+		processor->enable (!processor->enabled ());
 	}
 
 	return false;

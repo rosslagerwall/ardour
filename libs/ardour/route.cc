@@ -1150,8 +1150,8 @@ Route::ab_plugins (bool forward)
 				continue;
 			}
 
-			if ((*i)->active()) {
-				(*i)->deactivate ();
+			if ((*i)->enabled ()) {
+				(*i)->enable (false);
 				(*i)->set_next_ab_is_active (true);
 			} else {
 				(*i)->set_next_ab_is_active (false);
@@ -1168,11 +1168,7 @@ Route::ab_plugins (bool forward)
 				continue;
 			}
 
-			if ((*i)->get_next_ab_is_active()) {
-				(*i)->activate ();
-			} else {
-				(*i)->deactivate ();
-			}
+			(*i)->enable ((*i)->get_next_ab_is_active ());
 		}
 	}
 
@@ -1831,12 +1827,7 @@ Route::all_visible_processors_active (bool state)
 		if (!(*i)->display_to_user() || boost::dynamic_pointer_cast<Amp> (*i)) {
 			continue;
 		}
-
-		if (state) {
-			(*i)->activate ();
-		} else {
-			(*i)->deactivate ();
-		}
+		(*i)->enable (state);
 	}
 
 	_session.set_dirty ();
