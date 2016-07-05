@@ -33,7 +33,9 @@
 #include "gtkmm2ext/gui_thread.h"
 #include "gtkmm2ext/keyboard.h"
 
+#include "ardour/automation_control.h"
 #include "ardour/rc_configuration.h" // for widget prelight preference
+#include "ardour/parameter_descriptor.h"
 
 #include "ardour_knob.h"
 #include "timers.h"
@@ -292,6 +294,10 @@ bool
 ArdourKnob::on_scroll_event (GdkEventScroll* ev)
 {
 	/* mouse wheel */
+	boost::shared_ptr<PBD::Controllable> c = binding_proxy.get_controllable();
+	if (!c) {
+		return true;
+	}
 
 	float scale = 0.05;  //by default, we step in 1/20ths of the knob travel
 	if (ev->state & Keyboard::GainFineScaleModifier) {
@@ -302,17 +308,32 @@ ArdourKnob::on_scroll_event (GdkEventScroll* ev)
 		}
 	}
 
-	boost::shared_ptr<PBD::Controllable> c = binding_proxy.get_controllable();
-	if (c) {
-		float val = c->get_interface();
+#if 0 // needs fix for monitor-section parameter
+	boost::shared_ptr<ARDOUR::AutomationControl> _controllable = boost::dynamic_pointer_cast<ARDOUR::AutomationControl> (c);
+	if (_controllable) {
+		const ARDOUR::ParameterDescriptor& desc = _controllable->desc();
+		const float delta = desc.upper - desc.lower;
 
-		if ( ev->direction == GDK_SCROLL_UP )
-			val += scale;
-		else
-			val -= scale;
-
-		c->set_interface(val);
+		if (ev->state & Keyboard::GainFineScaleModifier) {
+			if (ev->state & Keyboard::GainExtraFineScaleModifier) {
+				scale = desc.step / delta;
+			} else {
+				scale = desc.smallstep / delta;
+			}
+		} else {
+			scale = desc.largestep / delta;
+		}
 	}
+#endif
+
+	float val = c->get_interface();
+
+	if ( ev->direction == GDK_SCROLL_UP )
+		val += scale;
+	else
+		val -= scale;
+
+	c->set_interface(val);
 
 	return true;
 }
@@ -341,6 +362,20 @@ ArdourKnob::on_motion_notify_event (GdkEventMotion *ev)
 			scale *= 0.10;
 		}
 	}
+
+#if 0 // needs fix for monitor-section parameter
+	boost::shared_ptr<ARDOUR::AutomationControl> _controllable = boost::dynamic_pointer_cast<ARDOUR::AutomationControl> (c);
+	if (_controllable) {
+		const ARDOUR::ParameterDescriptor& desc = _controllable->desc();
+		const float delta = desc.upper - desc.lower;
+
+		if (ev->state & Keyboard::GainFineScaleModifier) {
+			scale = desc.smallstep / delta;
+		} else {
+			scale = desc.step / delta;
+		}
+	}
+#endif
 
 	//calculate the travel of the mouse
 	int delta = (_grabbed_y - ev->y) - (_grabbed_x - ev->x);
