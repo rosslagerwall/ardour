@@ -53,6 +53,7 @@ class AddRouteDialog : public ArdourDialog
 	enum TypeWanted {
 		AudioTrack,
 		MidiTrack,
+		TriggerTrack,
 		MixedTrack,
 		AudioBus,
 		MidiBus,
